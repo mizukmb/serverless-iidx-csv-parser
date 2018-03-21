@@ -1,0 +1,5 @@
+bin
+iidx24_sinobuz_score.csv
+
+# Serverless directories
+.serverless
