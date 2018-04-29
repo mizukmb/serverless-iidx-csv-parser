@@ -15,3 +15,13 @@ package:
 functions:
   parse:
     handler: bin/main
+    events:
+      - http:
+          path: iidx/parse
+          method: get
+  scrapbox:
+    handler: bin/scrapbox
+    events:
+      - http:
+          path: iidx/scrapbox
+          method: get

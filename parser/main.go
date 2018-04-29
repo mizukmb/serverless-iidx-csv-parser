@@ -2,12 +2,14 @@ package main
 
 import (
 	"encoding/csv"
+	"encoding/json"
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/mizukmb/serverless-iidx-csv-parser/iidx"
 	"os"
 )
 
-func handler() (iidx.Iidx, error) {
+func handler() (events.APIGatewayProxyResponse, error) {
 	file, _ := os.Open("./iidx24_sinobuz_score.csv")
 	defer file.Close()
 
@@ -17,8 +19,9 @@ func handler() (iidx.Iidx, error) {
 	r.Read()
 
 	record, _ := r.Read()
+	j, _ := json.Marshal(iidx.NewIidx(record))
 
-	return iidx.NewIidx(record), nil
+	return events.APIGatewayProxyResponse{Body: string(j), StatusCode: 200}, nil
 }
 
 func main() {
