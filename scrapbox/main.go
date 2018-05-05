@@ -9,17 +9,21 @@ import (
 	"github.com/mizukmb/serverless-iidx-csv-parser/iidx"
 	"github.com/mizukmb/serverless-iidx-csv-parser/scrapbox/scrapbox"
 	"io"
-	"os"
+	"io/ioutil"
+	"log"
+	"mime"
+	"mime/multipart"
 	"strconv"
+	"strings"
 )
 
 func articleText(iidx iidx.Iidx) []string {
 	return []string{
 		iidx.Title,
 		"",
-		"[" + iidx.Version + "]",
-		"[" + iidx.Genre + "]",
-		"[" + iidx.Artist + "]",
+		"バージョン: [" + iidx.Version + "]",
+		"ジャンル: [" + iidx.Genre + "]",
+		"アーティスト: [" + iidx.Artist + "]",
 		"プレイ回数: " + strconv.Itoa(iidx.PlayCount),
 		"",
 		"[** NORMAL]",
@@ -55,11 +59,24 @@ func printScrapbox(j []byte) {
 	fmt.Println(string(j))
 }
 
-func handler() (events.APIGatewayProxyResponse, error) {
-	file, _ := os.Open("./iidx24_sinobuz_score.csv")
-	defer file.Close()
+func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	_, params, err := mime.ParseMediaType(request.Headers["content-type"])
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	r := csv.NewReader(file)
+	mr := multipart.NewReader(strings.NewReader(request.Body), params["boundary"])
+	p, err := mr.NextPart()
+	if err != nil {
+		log.Fatal(err)
+	}
+	slurp, err := ioutil.ReadAll(p)
+	if err != nil {
+		log.Fatal(err)
+	}
+	body := string(slurp[:])
+
+	r := csv.NewReader(strings.NewReader(body))
 	r.LazyQuotes = true
 
 	// Read header line (not use)
@@ -88,10 +105,15 @@ func handler() (events.APIGatewayProxyResponse, error) {
 
 	scrapbox := scrapbox.NewScrapbox(articles)
 	j, _ := json.Marshal(scrapbox)
+
+	h := map[string]string{
+		"Access-Control-Allow-Origin": "*",
+	}
+
 	// for debug
 	// printScrapbox(j)
 
-	return events.APIGatewayProxyResponse{Body: string(j), StatusCode: 200}, nil
+	return events.APIGatewayProxyResponse{Body: string(j), Headers: h, StatusCode: 200}, nil
 }
 
 func main() {

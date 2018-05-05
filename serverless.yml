@@ -24,4 +24,5 @@ functions:
     events:
       - http:
           path: iidx/scrapbox
-          method: get
+          method: post
+          cors: true
