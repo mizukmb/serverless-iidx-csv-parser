@@ -55,27 +55,7 @@ func articleText(iidx iidx.Iidx) []string {
 	}
 }
 
-func printScrapbox(j []byte) {
-	fmt.Println(string(j))
-}
-
-func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	_, params, err := mime.ParseMediaType(request.Headers["content-type"])
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	mr := multipart.NewReader(strings.NewReader(request.Body), params["boundary"])
-	p, err := mr.NextPart()
-	if err != nil {
-		log.Fatal(err)
-	}
-	slurp, err := ioutil.ReadAll(p)
-	if err != nil {
-		log.Fatal(err)
-	}
-	body := string(slurp[:])
-
+func readAll(body string) []scrapbox.Article {
 	r := csv.NewReader(strings.NewReader(body))
 	r.LazyQuotes = true
 
@@ -102,6 +82,32 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 		articles = append(articles, article)
 	}
+
+	return articles
+}
+
+func printScrapbox(j []byte) {
+	fmt.Println(string(j))
+}
+
+func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	_, params, err := mime.ParseMediaType(request.Headers["content-type"])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	mr := multipart.NewReader(strings.NewReader(request.Body), params["boundary"])
+	p, err := mr.NextPart()
+	if err != nil {
+		log.Fatal(err)
+	}
+	slurp, err := ioutil.ReadAll(p)
+	if err != nil {
+		log.Fatal(err)
+	}
+	body := string(slurp[:])
+
+	articles := readAll(body)
 
 	scrapbox := scrapbox.NewScrapbox(articles)
 	j, _ := json.Marshal(scrapbox)
