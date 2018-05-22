@@ -131,8 +131,16 @@ func (p Iidx) ScrapboxArticle(difficulty string) []string {
 	ret = append(ret, " PGREAT: "+strconv.Itoa(pD.PGreat))
 	ret = append(ret, " GREAT: "+strconv.Itoa(pD.Great))
 	ret = append(ret, " MISS: "+strconv.Itoa(pD.Miss))
-	ret = append(ret, " CLEARTYPE: "+pD.ClearType)
-	ret = append(ret, " DJLEVEL: "+pD.DjLevel)
+	if pD.ClearType == "NO PLAY" {
+		ret = append(ret, " CLEARTYPE: "+pD.ClearType)
+	} else {
+		ret = append(ret, " [CLEARTYPE: "+pD.ClearType+"]")
+	}
+	if pD.DjLevel == "---" {
+		ret = append(ret, " DJLEVEL: "+pD.DjLevel)
+	} else {
+		ret = append(ret, " [DJLEVEL: "+pD.DjLevel+"]")
+	}
 
 	return ret
 }
