@@ -2,6 +2,7 @@ package iidx
 
 import (
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -107,4 +108,60 @@ func NewIidx(record []string) Iidx {
 	}
 
 	return iidx
+}
+
+func (p Iidx) ScrapboxTitle(difficulty string) string {
+	return p.Title + " (" + difficultyShort(difficulty) + ")"
+}
+
+func (p Iidx) ScrapboxArticle(difficulty string) []string {
+	pD := p.difficulty(difficulty)
+	var ret []string
+
+	ret = append(ret, p.Title+" ("+difficultyShort(difficulty)+")")
+	ret = append(ret, "")
+	ret = append(ret, "バージョン: ["+p.Version+"]")
+	ret = append(ret, "ジャンル: ["+p.Genre+"]")
+	ret = append(ret, "アーティスト: ["+p.Artist+"]")
+	ret = append(ret, "プレイ回数: "+strconv.Itoa(p.PlayCount))
+	ret = append(ret, "")
+
+	ret = append(ret, " [LEVEL: "+strconv.Itoa(pD.Level)+"]")
+	ret = append(ret, " EXSCORE: "+strconv.Itoa(pD.ExScore))
+	ret = append(ret, " PGREAT: "+strconv.Itoa(pD.PGreat))
+	ret = append(ret, " GREAT: "+strconv.Itoa(pD.Great))
+	ret = append(ret, " MISS: "+strconv.Itoa(pD.Miss))
+	ret = append(ret, " CLEARTYPE: "+pD.ClearType)
+	ret = append(ret, " DJLEVEL: "+pD.DjLevel)
+
+	return ret
+}
+
+func (p *Iidx) difficulty(d string) difficulty {
+	var ret difficulty
+	switch strings.ToLower(d) {
+	case "normal":
+		ret = p.Normal
+	case "hyper":
+		ret = p.Hyper
+	case "another":
+		ret = p.Another
+	}
+
+	return ret
+}
+
+func difficultyShort(d string) string {
+	var ret string
+
+	switch strings.ToLower(d) {
+	case "normal":
+		ret = "N"
+	case "hyper":
+		ret = "H"
+	case "another":
+		ret = "A"
+	}
+
+	return ret
 }

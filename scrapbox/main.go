@@ -77,10 +77,17 @@ func readAll(body string) []scrapbox.Article {
 
 		iidx := iidx.NewIidx(record)
 
-		title := iidx.Title
-		article := scrapbox.NewArticle(title, articleText(iidx))
+		diffculty := []string{
+			"NORMAL",
+			"HYPER",
+			"ANOTHER",
+		}
 
-		articles = append(articles, article)
+		for _, d := range diffculty {
+			title := iidx.ScrapboxTitle(d)
+			article := scrapbox.NewArticle(title, iidx.ScrapboxArticle(d))
+			articles = append(articles, article)
+		}
 	}
 
 	return articles
